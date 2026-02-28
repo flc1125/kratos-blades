@@ -117,6 +117,45 @@ func main() {
     log.Println(output.Text())
 }
 ```
+
+### Skills
+
+`Agent` supports skill injection via `WithSkills(...)`, and skills can be loaded from a directory or `embed.FS`.
+For the skill package format and metadata rules, see [Agent Skill specification](https://agentskills.io/specification).
+
+```go
+package main
+
+import (
+    "embed"
+
+    "github.com/go-kratos/blades"
+    "github.com/go-kratos/blades/skills"
+)
+
+//go:embed example-skill/*
+var skillFS embed.FS
+
+func createAgent(model blades.ModelProvider) (blades.Agent, error) {
+    // Directory-based loading:
+    skillsFromDir, err := skills.NewFromDir("./skills")
+    if err != nil {
+        return nil, err
+    }
+    // Embedded loading:
+    skillsFromEmbed, err := skills.NewFromEmbed(skillFS)
+    if err != nil {
+        return nil, err
+    }
+    allSkills := append(skillsFromDir, skillsFromEmbed...)
+    return blades.NewAgent(
+        "SkillsAgent",
+        blades.WithModel(model),
+        blades.WithSkills(allSkills...),
+    )
+}
+```
+
 For more examples, please refer to the [examples](./examples) directory.
 
 ## 🤝 Contribution & Community
